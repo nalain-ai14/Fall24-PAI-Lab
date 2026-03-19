@@ -1,11 +1,3 @@
-"""
-Hand Gesture Recognition App
-Flask + OpenCV + MediaPipe 0.10+ (Tasks API)
-
-Works with:  mediapipe 0.10.x  (pip install mediapipe)
-Python:      3.9 - 3.12
-"""
-
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -15,8 +7,6 @@ import math
 import os
 import urllib.request
 from flask import Flask, Response, render_template, jsonify
-
-# MediaPipe 0.10 Tasks API imports
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import (
     HandLandmarker,
@@ -28,7 +18,6 @@ from mediapipe.tasks.python.vision import (
 
 app = Flask(__name__)
 
-# ── Model auto-download ───────────────────────────────────────────────────────
 MODEL_URL  = (
     "https://storage.googleapis.com/mediapipe-models/"
     "hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
@@ -50,7 +39,6 @@ def ensure_model():
             f"Place it next to app.py as:  hand_landmarker.task\n"
         )
 
-# ── Shared state ──────────────────────────────────────────────────────────────
 state = {
     "gesture":         "None",
     "confidence":      0.0,
@@ -61,28 +49,24 @@ state = {
 }
 state_lock = threading.Lock()
 
-# ── Hand bone connections for drawing ─────────────────────────────────────────
 HAND_CONNECTIONS = [(c.start, c.end)
                     for c in HandLandmarksConnections.HAND_CONNECTIONS]
 
-# ── Gesture classifier ────────────────────────────────────────────────────────
 
 def get_finger_states(landmarks, hand_label):
     """Return [Thumb, Index, Middle, Ring, Pinky] True=extended."""
     lm = landmarks
 
     fingers = []
-    # Thumb: compare tip x vs proximal knuckle x
     if hand_label == "Right":
         fingers.append(lm[4].x < lm[3].x)
     else:
         fingers.append(lm[4].x > lm[3].x)
 
-    # Fingers: tip y < pip y means extended (y increases downward)
     for tip_id, pip_id in [(8, 6), (12, 10), (16, 14), (20, 18)]:
         fingers.append(lm[tip_id].y < lm[pip_id].y)
 
-    return fingers  # [T, I, M, R, P]
+    return fingers
 
 
 def classify_gesture(fingers, landmarks):
@@ -125,7 +109,6 @@ def classify_gesture(fingers, landmarks):
     return names.get(count, f"{count} Fingers"), 0.75
 
 
-# ── Drawing ───────────────────────────────────────────────────────────────────
 
 def draw_skeleton(frame, landmarks, w, h):
     pts = {i: (int(lm.x * w), int(lm.y * h)) for i, lm in enumerate(landmarks)}
@@ -165,7 +148,6 @@ def draw_hud(frame, gesture, confidence, fps, hand_count):
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (200, 200, 200), 1, cv2.LINE_AA)
 
 
-# ── Video stream generator ────────────────────────────────────────────────────
 
 def generate_frames():
     ensure_model()
@@ -178,7 +160,7 @@ def generate_frames():
     fps_timer   = time.time()
     frame_count = 0
     current_fps = 0.0
-    timestamp   = 0   # incremental ms counter required by VIDEO mode
+    timestamp   = 0
 
     options = HandLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=MODEL_PATH),
@@ -205,7 +187,6 @@ def generate_frames():
             frame = cv2.flip(frame, 1)
             h, w  = frame.shape[:2]
 
-            # FPS
             frame_count += 1
             now = time.time()
             if now - fps_timer >= 1.0:
@@ -213,7 +194,6 @@ def generate_frames():
                 frame_count = 0
                 fps_timer   = now
 
-            # Detect
             timestamp += 33
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
@@ -227,7 +207,7 @@ def generate_frames():
             for idx, (landmarks, handedness_list) in enumerate(
                 zip(result.hand_landmarks, result.handedness)
             ):
-                hand_label = handedness_list[0].category_name  # "Left" or "Right"
+                hand_label = handedness_list[0].category_name
                 draw_skeleton(frame, landmarks, w, h)
                 fingers = get_finger_states(landmarks, hand_label)
                 g, c    = classify_gesture(fingers, landmarks)
@@ -258,8 +238,6 @@ def generate_frames():
 
     cap.release()
 
-
-# ── Flask routes ──────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
