@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GestureAI — Hand Recognition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #080c12;
+      --bg2:        #0e1420;
+      --bg3:        #131b28;
+      --accent:     #00ffb2;
+      --accent2:    #00b8ff;
+      --accent3:    #ff3cac;
+      --text:       #e2eaf5;
+      --muted:      #5a6a80;
+      --border:     rgba(0,255,178,.15);
+      --glow:       0 0 20px rgba(0,255,178,.25);
+      --font-mono:  'Space Mono', monospace;
+      --font-head:  'Syne', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+      background-size: 150px;
+      opacity: .35;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,255,178,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,178,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .shell {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+      background: rgba(8,12,18,.7);
+    }
+
+    .logo {
+      font-family: var(--font-head);
+      font-size: 1.5rem; font-weight: 800;
+      letter-spacing: -.02em;
+      color: var(--accent);
+      text-shadow: 0 0 18px rgba(0,255,178,.5);
+    }
+    .logo span { color: var(--text); }
+
+    .status-pill {
+      display: flex; align-items: center; gap: 8px;
+      font-size: .75rem; color: var(--muted);
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 14px;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 8px var(--accent);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(.8); }
+    }
+
+    .fps-badge {
+      font-size: .7rem; color: var(--accent2);
+      background: rgba(0,184,255,.08);
+      border: 1px solid rgba(0,184,255,.2);
+      border-radius: 6px; padding: 4px 10px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      padding: 24px 32px;
+      align-items: start;
+    }
+
+    .video-card {
+      border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      background: var(--bg2);
+      box-shadow: var(--glow), inset 0 1px 0 rgba(255,255,255,.04);
+      position: relative;
+    }
+    .video-card img {
+      display: block; width: 100%; height: auto;
+      aspect-ratio: 4/3; object-fit: cover;
+    }
+    .video-corner {
+      position: absolute; top: 12px; left: 12px;
+      font-size: .65rem; color: var(--accent);
+      background: rgba(0,0,0,.6); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 10px; letter-spacing: .1em;
+    }
+
+    .side {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+
+    .card-title {
+      font-family: var(--font-head);
+      font-size: .7rem; font-weight: 700;
+      letter-spacing: .15em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 14px;
+    }
+
+ 
+    .gesture-big {
+      text-align: center;
+      padding: 10px 0 6px;
+    }
+    .gesture-emoji {
+      font-size: 3.5rem; line-height: 1;
+      display: block; margin-bottom: 10px;
+    }
+    .gesture-name {
+      font-family: var(--font-head);
+      font-size: 1.25rem; font-weight: 700;
+      color: var(--accent);
+      text-shadow: 0 0 16px rgba(0,255,178,.4);
+      min-height: 2rem;
+    }
+
+ 
+    .conf-row {
+      display: flex; justify-content: space-between;
+      font-size: .7rem; color: var(--muted);
+      margin-bottom: 6px; margin-top: 16px;
+    }
+    .conf-track {
+      height: 6px; background: var(--bg3);
+      border-radius: 99px; overflow: hidden;
+    }
+    .conf-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      box-shadow: 0 0 10px var(--accent);
+      transition: width .3s ease;
+      width: 0%;
+    }
+
+
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat-box {
+      background: var(--bg3);
+      border: 1px solid rgba(255,255,255,.04);
+      border-radius: 10px; padding: 12px;
+    }
+    .stat-val {
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--accent2);
+      font-family: var(--font-head);
+    }
+    .stat-lbl {
+      font-size: .65rem; color: var(--muted);
+      margin-top: 2px; letter-spacing: .08em;
+    }
+
+
+    .finger-row {
+      display: flex; gap: 8px; justify-content: center;
+      margin-top: 4px;
+    }
+    .finger {
+      width: 36px; height: 52px;
+      border-radius: 99px 99px 8px 8px;
+      border: 2px solid var(--bg3);
+      background: var(--bg3);
+      transition: all .2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .finger.up {
+      border-color: var(--accent);
+      background: rgba(0,255,178,.12);
+      box-shadow: 0 0 12px rgba(0,255,178,.3);
+    }
+    .finger::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 40%;
+      background: rgba(0,255,178,.15);
+      border-radius: 0 0 6px 6px;
+    }
+    .finger-lbl {
+      text-align: center; margin-top: 6px;
+      font-size: .6rem; color: var(--muted);
+      display: flex; gap: 8px; justify-content: center;
+    }
+    .finger-lbl span { width: 36px; text-align: center; }
+
+    .history-list {
+      list-style: none; display: flex; flex-direction: column; gap: 6px;
+      max-height: 220px; overflow-y: auto;
+    }
+    .history-list li {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg3);
+      border-radius: 8px; padding: 8px 12px;
+      font-size: .8rem;
+      animation: slideIn .25s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .history-list li span.e { font-size: 1.1rem; }
+
+    .ref-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .ref-item {
+      background: var(--bg3); border-radius: 8px;
+      padding: 7px 10px; font-size: .72rem;
+      color: var(--muted); display: flex; align-items: center; gap: 6px;
+    }
+    .ref-item span { font-size: 1rem; }
+
+    footer {
+      text-align: center; padding: 14px;
+      font-size: .65rem; color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      .side { display: grid; grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      header { padding: 14px 16px; }
+      main   { padding: 14px 16px; }
+      .side  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <div class="logo">Gesture<span>AI</span></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="fps-badge" id="fpsBadge">-- FPS</div>
+      <div class="status-pill">
+        <div class="dot"></div>
+        <span id="liveLabel">LIVE</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <div class="video-card">
+      <div class="video-corner">CAMERA · REALTIME</div>
+      <img src="/video_feed" alt="Live Camera Feed" id="videoFeed" />
+    </div>
+
+    <div class="side">
+
+      <div class="card">
+        <div class="card-title">Current Gesture</div>
+        <div class="gesture-big">
+          <span class="gesture-emoji" id="gestureEmoji">🤲</span>
+          <div class="gesture-name" id="gestureName">Waiting…</div>
+        </div>
+        <div class="conf-row">
+          <span>Confidence</span>
+          <span id="confPct">0%</span>
+        </div>
+        <div class="conf-track">
+          <div class="conf-fill" id="confBar"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Stats</div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-val" id="statHands">0</div>
+            <div class="stat-lbl">HANDS</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="statFingers">0</div>
+            <div class="stat-lbl">FINGERS UP</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Finger State</div>
+        <div class="finger-row" id="fingerRow">
+          <div class="finger" id="f0"></div>
+          <div class="finger" id="f1"></div>
+          <div class="finger" id="f2"></div>
+          <div class="finger" id="f3"></div>
+          <div class="finger" id="f4"></div>
+        </div>
+        <div class="finger-lbl">
+          <span>T</span><span>I</span><span>M</span><span>R</span><span>P</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gesture History</div>
+        <ul class="history-list" id="historyList">
+          <li style="color:var(--muted);font-size:.75rem">
+            No gestures yet…
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Gesture Reference</div>
+        <div class="ref-grid">
+          <div class="ref-item"><span>✌️</span> Peace</div>
+          <div class="ref-item"><span>👍</span> Thumbs Up</div>
+          <div class="ref-item"><span>👎</span> Thumbs Down</div>
+          <div class="ref-item"><span>✊</span> Fist</div>
+          <div class="ref-item"><span>🖐</span> Open Hand</div>
+          <div class="ref-item"><span>☝️</span> Pointing</div>
+          <div class="ref-item"><span>🤙</span> Call Me</div>
+          <div class="ref-item"><span>👌</span> OK Sign</div>
+          <div class="ref-item"><span>🤞</span> Crossed</div>
+          <div class="ref-item"><span>🖖</span> Vulcan</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>GestureAI · OpenCV + MediaPipe + Flask · Real-time Hand Recognition</footer>
+</div>
+
+<script>
+  const EMOJIS = {
+    "✌️  Peace":      "✌️",
+    "👍 Thumbs Up":   "👍",
+    "👎 Thumbs Down": "👎",
+    "✊ Fist":        "✊",
+    "🖐 Open Hand":   "🖐",
+    "☝️  Pointing":   "☝️",
+    "🤙 Call Me":     "🤙",
+    "🤞 Crossed":     "🤞",
+    "🖖 Vulcan":      "🖖",
+    "👌 OK":          "👌",
+  };
+
+  let prevHistory = [];
+
+  async function pollStatus() {
+    try {
+      const res  = await fetch("/status");
+      const data = await res.json();
+
+      document.getElementById("fpsBadge").textContent =
+        data.fps ? `${data.fps.toFixed(1)} FPS` : "-- FPS";
+
+      const g = data.gesture;
+      const emoji = EMOJIS[g] ?? (g === "None" ? "🤲" : "🖐");
+      document.getElementById("gestureEmoji").textContent = emoji;
+      document.getElementById("gestureName").textContent =
+        g === "None" ? "No Hand Detected" : g;
+
+      const pct = Math.round((data.confidence || 0) * 100);
+      document.getElementById("confPct").textContent = pct + "%";
+      document.getElementById("confBar").style.width = pct + "%";
+
+      document.getElementById("statHands").textContent = data.hand_count || 0;
+      const fu = (data.fingers_up || []).filter(Boolean).length;
+      document.getElementById("statFingers").textContent = fu;
+
+      (data.fingers_up || [false,false,false,false,false]).forEach((v, i) => {
+        const el = document.getElementById("f" + i);
+        if (el) el.classList.toggle("up", !!v);
+      });
+
+
+      const hist = data.gesture_history || [];
+      if (JSON.stringify(hist) !== JSON.stringify(prevHistory)) {
+        prevHistory = [...hist];
+        const ul = document.getElementById("historyList");
+        if (hist.length === 0) {
+          ul.innerHTML = `<li style="color:var(--muted);font-size:.75rem">No gestures yet…</li>`;
+        } else {
+          ul.innerHTML = [...hist].reverse().map(h => {
+            const e = EMOJIS[h] || "🤚";
+            return `<li><span class="e">${e}</span>${h}</li>`;
+          }).join("");
+        }
+      }
+    } catch(e) {}
+  }
+
+  setInterval(pollStatus, 200);
+  pollStatus();
+</script>
+</body>
+</html>
