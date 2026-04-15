@@ -1,10 +1,10 @@
-# ✋ GestureAI — Hand Gesture Recognition
+#  GestureAI — Hand Gesture Recognition
 
 A real-time hand gesture recognition web app built with **OpenCV**, **MediaPipe**, and **Flask**.
 
 ---
 
-## 🚀 Features
+##  Features
 
 - Real-time hand landmark detection via webcam
 - Recognises 10 gestures: Peace, Thumbs Up/Down, Fist, Open Hand, Pointing, Call Me, Crossed Fingers, Vulcan, OK
@@ -16,7 +16,7 @@ A real-time hand gesture recognition web app built with **OpenCV**, **MediaPipe*
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 gesture_app/
 ├── app.py                  # Flask backend + OpenCV + MediaPipe logic
@@ -27,7 +27,7 @@ gesture_app/
 
 ---
 
-## ⚙️ Setup & Run
+##  Setup & Run
 
 ### 1. Install dependencies
 
@@ -51,7 +51,7 @@ Make sure your webcam is connected and accessible.
 
 ---
 
-## 🤚 Supported Gestures
+##  Supported Gestures
 
 | Gesture       | Description                          |
 |---------------|--------------------------------------|
@@ -68,7 +68,7 @@ Make sure your webcam is connected and accessible.
 
 ---
 
-## 🧠 Technical Architecture
+##  Technical Architecture
 
 ```
 Webcam → OpenCV capture → MediaPipe Hands
@@ -83,7 +83,7 @@ Webcam → OpenCV capture → MediaPipe Hands
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Backend**: Python, Flask, OpenCV, MediaPipe, NumPy
 - **Frontend**: Vanilla HTML/CSS/JS, Google Fonts (Syne + Space Mono)
@@ -91,7 +91,7 @@ Webcam → OpenCV capture → MediaPipe Hands
 
 ---
 
-## 📝 Notes
+##  Notes
 
 - Works best with good lighting and a clear background
 - Supports up to 2 hands simultaneously
