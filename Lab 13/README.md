@@ -1,9 +1,9 @@
-# ⚖️ Wakeel AI — Pakistan Legal Aid Bot
+# Wakeel AI — Pakistan Legal Aid Bot
 ### GenAI + Flask | BSAI 4th Semester Final Project
 
 ---
 
-## 🚀 What This Does
+## What This Does
 
 Wakeel AI is a free AI-powered legal aid assistant for Pakistani citizens. Users describe their legal problem in English or Roman Urdu, and the app:
 
@@ -16,7 +16,7 @@ Wakeel AI is a free AI-powered legal aid assistant for Pakistani citizens. Users
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -28,7 +28,7 @@ Wakeel AI is a free AI-powered legal aid assistant for Pakistani citizens. Users
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Legal_Aid_Bot/
@@ -52,7 +52,7 @@ Legal_Aid_Bot/
 
 ---
 
-## ⚙️ Setup Instructions
+## Setup Instructions
 
 ### Step 1: Clone / Download the project
 ```bash
@@ -100,9 +100,9 @@ http://localhost:5000
 
 ---
 
-## 🔑 API Configuration (Grok / xAI)
+##  API Configuration (Grok / xAI)
 
-This project uses the **Grok API** by xAI, accessed via the OpenAI-compatible SDK:
+This project uses the **Groq API**, accessed via the OpenAI-compatible SDK:
 
 ```python
 from openai import OpenAI
@@ -123,7 +123,7 @@ response = client.chat.completions.create(
 
 ---
 
-## 🎯 Key Features
+##  Key Features
 
 ### 1. Smart Legal Analysis
 - Auto-categorizes legal issues
@@ -146,7 +146,7 @@ response = client.chat.completions.create(
 
 ---
 
-## 📋 API Routes
+##  API Routes
 
 | Route | Method | Description |
 |-------|--------|-------------|
@@ -157,7 +157,7 @@ response = client.chat.completions.create(
 
 ---
 
-## 🧪 Demo Script (For Presentation)
+##  Demo Script (For Presentation)
 
 1. Open app → Show clean UI
 2. Type: *"Mera landlord mujhe ghar se nikal raha hai bina notice ke"*
@@ -168,15 +168,15 @@ response = client.chat.completions.create(
 
 ---
 
-## ⚠️ Disclaimer
+##  Disclaimer
 
 This app provides general legal information based on Pakistani law. It is NOT a substitute for professional legal advice. Users should consult a licensed Pakistani lawyer for their specific cases.
 
 ---
 
-## 👨‍💻 Built By
+##  Built By
 
 **Nalain** | BSAI 4th Semester | Programming for AI Final Project
 ```
-GenAI + Flask | Grok API (xAI) | 2026
+GenAI + Flask | Groq API | 2026
 ```
