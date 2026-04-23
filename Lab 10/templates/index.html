@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wakeel AI - Pakistan Legal Aid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: 72vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #d4af37 #1a1a1a;
+        }
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-container::-webkit-scrollbar-thumb {
+            background-color: #d4af37;
+            border-radius: 20px;
+        }
+        .message-bubble {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #d4af37, #f5e8a0, #d4af37);
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sans">
+    <div class="max-w-7xl mx-auto h-screen flex flex-col">
+        <!-- Header -->
+        <div class="bg-zinc-950 border-b border-amber-500/30 px-8 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-600 rounded-2xl flex items-center justify-center text-4xl shadow-lg shadow-amber-500/50">
+                    ⚖️
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight gold-gradient bg-clip-text text-transparent">Wakeel AI</h1>
+                    <p class="text-amber-400 text-sm font-medium">Pakistan's Premier Legal Aid Assistant</p>
+                </div>
+            </div>
+            <button onclick="clearChat()" 
+                    class="flex items-center gap-3 px-6 py-3 bg-zinc-900 hover:bg-red-950 border border-red-500/30 hover:border-red-500 rounded-2xl text-red-400 hover:text-red-300 transition-all">
+                <i class="fas fa-trash-alt"></i> 
+                <span class="font-medium">Clear Chat</span>
+            </button>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar - Golden Accents -->
+            <div class="w-80 bg-zinc-950 border-r border-amber-500/20 p-8 overflow-y-auto">
+                <h2 class="text-xl font-semibold mb-6 flex items-center gap-3 text-amber-400">
+                    <i class="fas fa-lightbulb"></i> Common Legal Issues
+                </h2>
+                <div class="space-y-3">
+                    <button onclick="sendQuickTopic('Mera landlord mujhe ghar se nikal raha hai bina notice ke')" 
+                            class="w-full text-left px-6 py-4 bg-zinc-900 hover:bg-amber-950 border border-amber-500/10 hover:border-amber-400 rounded-3xl transition-all flex items-center gap-4 group">
+                        <span class="text-2xl">🏠</span>
+                        <span class="group-hover:text-amber-300">Tenant / Rent Dispute</span>
+                    </button>
+                    <button onclick="sendQuickTopic('My employer fired me without notice')" 
+                            class="w-full text-left px-6 py-4 bg-zinc-900 hover:bg-amber-950 border border-amber-500/10 hover:border-amber-400 rounded-3xl transition-all flex items-center gap-4 group">
+                        <span class="text-2xl">💼</span>
+                        <span class="group-hover:text-amber-300">Job Termination</span>
+                    </button>
+                    <button onclick="sendQuickTopic('Meri divorce ki case kya rights hain?')" 
+                            class="w-full text-left px-6 py-4 bg-zinc-900 hover:bg-amber-950 border border-amber-500/10 hover:border-amber-400 rounded-3xl transition-all flex items-center gap-4 group">
+                        <span class="text-2xl">👨‍👩‍👧</span>
+                        <span class="group-hover:text-amber-300">Family / Divorce Law</span>
+                    </button>
+                    <button onclick="sendQuickTopic('Online harassment ho raha hai cyber crime')" 
+                            class="w-full text-left px-6 py-4 bg-zinc-900 hover:bg-amber-950 border border-amber-500/10 hover:border-amber-400 rounded-3xl transition-all flex items-center gap-4 group">
+                        <span class="text-2xl">💻</span>
+                        <span class="group-hover:text-amber-300">Cyber Crime / Harassment</span>
+                    </button>
+                    <button onclick="sendQuickTopic('Meri property inheritance mein issue hai')" 
+                            class="w-full text-left px-6 py-4 bg-zinc-900 hover:bg-amber-950 border border-amber-500/10 hover:border-amber-400 rounded-3xl transition-all flex items-center gap-4 group">
+                        <span class="text-2xl">🏛️</span>
+                        <span class="group-hover:text-amber-300">Inheritance / Property</span>
+                    </button>
+                </div>
+
+                <div class="mt-12 p-5 bg-zinc-900/80 border border-amber-500/20 rounded-3xl text-xs leading-relaxed text-amber-300">
+                    ⚠️ <strong class="text-amber-400">Important:</strong> This is general legal information only. 
+                    Always consult a licensed Pakistani lawyer for your specific case.
+                </div>
+            </div>
+
+            <!-- Main Chat -->
+            <div class="flex-1 flex flex-col bg-black">
+                <div id="chat-container" class="chat-container p-8 space-y-8 flex-1">
+                    <!-- Messages added by JavaScript -->
+                </div>
+
+                <!-- Input Area -->
+                <div class="bg-zinc-950 border-t border-amber-500/30 p-6">
+                    <div class="max-w-3xl mx-auto">
+                        <div class="relative">
+                            <textarea id="user-input" rows="2"
+                                class="w-full bg-zinc-900 border border-amber-500/30 focus:border-amber-400 rounded-3xl px-7 py-5 text-white placeholder-gray-400 resize-y focus:outline-none text-base"
+                                placeholder="Describe your legal problem in English or Roman Urdu..."></textarea>
+                            <button onclick="sendMessage()" 
+                                    class="absolute bottom-4 right-5 bg-gradient-to-r from-amber-400 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-black w-11 h-11 rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-amber-500/40">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <p class="text-center text-xs text-amber-400/60 mt-4">
+                            Press Enter to send • All conversations are private
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Modal -->
+    <div id="document-modal" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+        <div class="bg-zinc-900 rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col border border-amber-500/30">
+            <div class="px-8 py-6 border-b border-amber-500/20 flex items-center justify-between">
+                <h3 class="text-2xl font-semibold flex items-center gap-3 text-amber-300">
+                    <i class="fas fa-file-alt"></i> Drafted Legal Document
+                </h3>
+                <button onclick="closeModal()" class="text-2xl text-gray-400 hover:text-amber-300">×</button>
+            </div>
+            <div id="document-content" class="p-8 overflow-auto flex-1 text-amber-100 whitespace-pre-wrap font-mono text-sm leading-relaxed bg-black/40">
+            </div>
+            <div class="p-6 border-t border-amber-500/20 flex gap-4">
+                <button onclick="copyDocument()" 
+                        class="flex-1 py-4 bg-amber-500 hover:bg-amber-600 text-black rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
+                    <i class="fas fa-copy"></i> Copy Document
+                </button>
+                <button onclick="closeModal()" 
+                        class="flex-1 py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-medium">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResponseData = null;
+
+        function addMessage(role, content, data = null) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} message-bubble`;
+
+            if (role === 'user') {
+                div.innerHTML = `
+                    <div class="max-w-lg bg-gradient-to-r from-amber-500 to-yellow-600 text-black rounded-3xl rounded-tr-none px-6 py-4 text-base font-medium">
+                        ${content}
+                    </div>
+                `;
+            } else {
+                let strengthHTML = '';
+                if (data?.case_strength !== undefined) {
+                    const percent = Math.min(100, Math.max(0, data.case_strength));
+                    let color = percent >= 70 ? 'bg-emerald-500' : percent >= 40 ? 'bg-amber-400' : 'bg-red-500';
+                    strengthHTML = `
+                        <div class="mt-6 bg-zinc-950 border border-amber-500/20 p-5 rounded-3xl">
+                            <div class="flex justify-between mb-3">
+                                <span class="font-semibold text-amber-300">Case Strength</span>
+                                <span class="font-mono font-bold text-amber-400">${percent}%</span>
+                            </div>
+                            <div class="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                                <div class="${color} h-full transition-all duration-700" style="width: ${percent}%"></div>
+                            </div>
+                            <p class="text-xs text-amber-400/70 mt-2">${data.case_strength_reason || ''}</p>
+                        </div>
+                    `;
+                }
+
+                let html = `
+                    <div class="max-w-2xl bg-zinc-900 border border-amber-500/20 rounded-3xl rounded-tl-none p-7">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="text-5xl drop-shadow">${data?.category_icon || '⚖️'}</div>
+                            <div>
+                                <div class="font-bold text-xl text-amber-300">${data?.category || 'Legal Response'}</div>
+                                <div class="text-xs text-amber-400/60">${data?.timestamp || ''}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <div class="text-amber-400 text-xs uppercase tracking-widest mb-2">Summary</div>
+                            <p class="text-gray-200 leading-relaxed">${data?.summary || content}</p>
+                        </div>
+                `;
+
+                if (data?.rights && data.rights.length) {
+                    html += `<div class="mb-6"><div class="text-amber-400 text-xs uppercase tracking-widest mb-3">Your Rights</div>`;
+                    data.rights.forEach(r => {
+                        html += `<div class="flex gap-3 mb-2"><span class="text-emerald-400">▸</span><span class="text-gray-300">${r}</span></div>`;
+                    });
+                    html += `</div>`;
+                }
+
+                if (data?.relevant_law && data.relevant_law.length) {
+                    html += `<div class="mb-6"><div class="text-amber-400 text-xs uppercase tracking-widest mb-3">Relevant Laws</div>`;
+                    data.relevant_law.forEach(law => {
+                        html += `
+                            <div class="bg-black/60 border border-amber-500/10 p-4 rounded-2xl mb-3">
+                                <div class="font-medium text-amber-300">${law.name} — ${law.section}</div>
+                                <div class="text-sm text-gray-400 mt-1">${law.description}</div>
+                            </div>`;
+                    });
+                    html += `</div>`;
+                }
+
+                html += strengthHTML;
+
+                if (data?.warning) {
+                    html += `<div class="bg-red-950/50 border-l-4 border-red-500 p-4 text-red-300 text-sm rounded-r-2xl">${data.warning}</div>`;
+                }
+
+                html += `
+                    <div class="mt-8 flex gap-4">
+                        <button onclick="draftDocument('${data?.user_query || ''}')" 
+                                class="flex-1 bg-gradient-to-r from-amber-400 to-yellow-600 hover:from-amber-500 hover:to-yellow-700 text-black py-4 rounded-3xl font-semibold flex items-center justify-center gap-2 transition shadow-lg">
+                            <i class="fas fa-file-alt"></i> Draft Legal Notice
+                        </button>
+                        <button onclick="copyResponse(this)" 
+                                class="flex-1 border border-amber-500/30 hover:border-amber-400 py-4 rounded-3xl font-medium flex items-center justify-center gap-2 transition">
+                            <i class="fas fa-copy"></i> Copy Summary
+                        </button>
+                    </div>
+                `;
+
+                div.innerHTML = html;
+            }
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage('user', message);
+            input.value = '';
+
+            const res = await fetch('/api/legal-query', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message})
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                currentResponseData = result.data;
+                addMessage('assistant', '', result.data);
+            } else {
+                addMessage('assistant', `Error: ${result.error || 'Please try again'}`);
+            }
+        }
+
+        async function sendQuickTopic(topic) {
+            addMessage('user', topic);
+            const res = await fetch('/api/legal-query', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: topic})
+            });
+            const result = await res.json();
+            if (result.success) {
+                currentResponseData = result.data;
+                addMessage('assistant', '', result.data);
+            }
+        }
+
+        async function draftDocument(context) {
+            if (!context) return;
+            const modal = document.getElementById('document-modal');
+            const content = document.getElementById('document-content');
+            content.innerHTML = '<div class="flex justify-center py-12"><i class="fas fa-spinner fa-spin text-4xl text-amber-400"></i></div>';
+            modal.classList.remove('hidden');
+
+            const res = await fetch('/api/draft-document', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'legal notice', context})
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                content.innerHTML = `<pre class="whitespace-pre-wrap">${data.document}</pre>`;
+            } else {
+                content.innerHTML = `<p class="text-red-400">Error: ${data.error}</p>`;
+            }
+        }
+
+        function copyDocument() {
+            const text = document.getElementById('document-content').innerText;
+            navigator.clipboard.writeText(text).then(() => alert("✅ Document copied successfully!"));
+        }
+
+        function copyResponse(btn) {
+            if (!currentResponseData) return;
+            const text = JSON.stringify(currentResponseData, null, 2);
+            navigator.clipboard.writeText(text).then(() => {
+                const original = btn.innerHTML;
+                btn.innerHTML = `<i class="fas fa-check text-emerald-400"></i> Copied!`;
+                setTimeout(() => btn.innerHTML = original, 2000);
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('document-modal').classList.add('hidden');
+        }
+
+        function clearChat() {
+            if (confirm("Clear entire conversation?")) {
+                fetch('/api/clear-session', {method: 'POST'});
+                document.getElementById('chat-container').innerHTML = '';
+            }
+        }
+
+        document.getElementById('user-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
